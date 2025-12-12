@@ -9,11 +9,10 @@ Chess Repertoire Builder is a self-contained HTML/JavaScript application that le
 
 ## Features
 - Opening stats via Lichess API
-- Move popularity and win/draw/loss percentages
+- Move popularity and win/loss percentages
 - Build and edit a personal opening tree (White/Black)
 - Save/load repertoires via LocalStorage
 - 100% browser-based, no backend
-- Optional: use Maurizio’s chess-art to configure stroke/shadow/colours
 
 ## Technology
 - HTML5
