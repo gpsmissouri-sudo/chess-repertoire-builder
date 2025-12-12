@@ -2,3 +2,5 @@
 Build chess opening repertoires.
 
 The beautiful chess piece artwork used in this program was created by Maurizio Monge and is used with permission, requiring attribution. Source: https://poisson.phc.dm.unipi.it/~monge/chess_art.php
+
+You can try this program at https://restframe.us/openingstudy/
