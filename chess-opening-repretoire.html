@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Opening Study</title>
+  <style>
+    :root{--bg:#0b0c0f;--panel:#0f1113;--muted:#9aa0a6;--accent:#6ea6ff;--border:#202427;--sq:clamp(32px,10vw,56px);--gap:4px;--boardW:calc(var(--sq)*8 + var(--gap)*7);--light:#e6e6e6;--dark:#9a9a9a;--paper:#ebe4d4;--paper-alt:#d9cfb8}
+    body{font-family:system-ui, -apple-system, sans-serif; margin:0; background:var(--bg); color:#e6eef6}
+    .container{max-width:none;margin:36px}
+    header{display:flex;align-items:center;gap:12px;justify-content:space-between}
+    .controls{display:flex;gap:8px;align-items:center}
+    table{border-collapse:collapse;width:100%;background:transparent;table-layout:fixed}
+    th,td{border:1px solid #c9b99a;padding:4px;text-align:left;color:#3a3020;word-wrap:break-word}
+    thead th{background:#c9bda0;color:#3a3020;font-weight:600}
+    tbody tr:nth-child(odd){background:var(--paper)}
+    tbody tr:nth-child(even){background:var(--paper-alt)}
+    .moves-list{overflow:auto}
+    #scoresheet{color:#6ea6ff;margin-bottom:16px}
+    #added-moves{margin-top:16px;background:var(--paper);padding:12px;border-radius:8px;box-sizing:border-box}
+    .move-group{margin-bottom:12px;padding:8px;background:var(--paper);border-radius:4px}
+    .move-row{margin:2px 0;display:flex;gap:2px;align-items:center;flex-wrap:wrap;padding:4px 6px;border-radius:4px}
+    .move-row:nth-child(odd){background:var(--paper)}
+    .move-row:nth-child(even){background:var(--paper-alt)}
+    .move-num{font-family:monospace;margin-right:2px;color:#5a5040}
+    .move-btn{font-family:monospace;padding:4px 6px;background:#c9bda0;color:#3a3020;border:1px solid #a09070}
+    .move-btn:hover{background:#b9ad90}
+    .response-btn{min-width:30px;background:#c9bda0;color:#3a3020;border:1px solid #a09070}
+    .move-btn.current{background:green;color:#fff}
+    .move-btn.selected{background:lightblue;color:#000}
+    .move-btn.gray{background:#666;color:#fff}
+    .response-btn.active{background:lightblue;color:#000}
+    .paper-panel{background:var(--paper);padding:12px;border-radius:8px;color:#3a3020}
+    .notice{color:var(--muted);font-size:90%}
+    .error{color:#ff7b7b}
+    .row{display:flex;gap:18px;align-items:flex-start;padding:20px}
+    .left-col{flex:0 0 auto}
+    input,select{background:#0b1220;color:#e6eef6;border:1px solid var(--border);padding:6px;border-radius:6px}
+    button{background:#3a3f44;color:#e6eef6;border:1px solid var(--border);padding:8px 10px;border-radius:6px;cursor:pointer}
+    button:hover{background:#4a5056}
+    h1{margin:0;font-size:20px}
+    h2{margin:8px 0}
+    .boardWrap{position:relative;width:fit-content;overflow:hidden;background:#0b0b0b;padding:var(--gap);border-radius:12px;box-shadow:0 0 0 1px #222 inset,0 6px 30px rgba(0,0,0,.4)}
+    table.board{width:var(--boardW)!important;height:var(--boardW)!important;border-spacing:var(--gap)!important}
+    th.sq{width:var(--sq);height:var(--sq);line-height:var(--sq);cursor:pointer;user-select:none;text-align:center;font-weight:400;border:none;border-radius:10px;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);transition:outline-color .06s linear,box-shadow .06s linear}
+    .sq-light{background:var(--light)}
+    .sq-dark{background:var(--dark)}
+    .sq::before,.sq::after{position:absolute;pointer-events:none;line-height:1;font-size:calc(var(--sq)*0.18);color:#222;opacity:.9}
+    .board[data-orient="white"] .sq[data-rank="1"]::after{content:attr(data-file);bottom:3px;right:5px}
+    .board[data-orient="black"] .sq[data-rank="8"]::after{content:attr(data-file);bottom:3px;right:5px}
+    .board[data-orient="white"] .sq[data-file="a"]::before{content:attr(data-rank);top:3px;left:5px}
+    .board[data-orient="black"] .sq[data-file="h"]::before{content:attr(data-rank);top:3px;left:5px}
+    .piece{width:calc(var(--sq)*0.86);height:calc(var(--sq)*0.86);display:block;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;margin:auto}
+    .sq.highlight{box-shadow:inset 0 0 0 4px lightblue}
+    @media(max-width:800px){.row{flex-direction:column}.container{margin:12px}}
+  </style>
+</head>
+  <body>
+  <div class="container">
+    <header>
+    </header>
+
+    <!-- Splash screen -->
+    <div id="splash" style="margin-top:18px;padding:24px;border-radius:8px;background:rgba(255,255,255,0.08);text-align:center;">
+      <h2 style="margin-top:0">Restframe Opening Study</h2>
+      <p class="notice">Build and save opening repertoires using the Lichess openings database.</p>
+      <p style="font-size:13px;color:var(--muted);margin-top:8px">Only moves with over 10,000 games from players rated 1600+ are considered.</p>
+      <p class="notice">Load a previous saved repertoire or start a new one</p>
+      <div style="margin:12px 0;display:flex;gap:12px;align-items:center;justify-content:center">
+        <button id="splashLoad">Load</button>
+        <input type="file" id="fileInput" accept=".txt,.csv" style="display:none">
+        <button id="splashCreate">Create New</button>
+        <div id="createChoices" style="display:none;gap:8px">
+          <button id="playWhite">White Repertoire</button>
+          <button id="playBlack">Black Repertoire</button>
+        </div>
+      </div>
+      
+    </div>
+
+  <div id="main" style="display:none;flex-direction:column;">
+    <div style="display:flex;gap:18px;align-items:flex-start;padding:20px;">
+      <div class="left-col" style="flex:0 0 auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px">
+          <h2 style="margin:0;font-size:18px">RestFrame Opening Builder</h2>
+          <span style="color:var(--muted);font-size:14px">by Jeff Gilbert</span>
+        </div>
+        <div id="board"></div>
+        <div id="scoresheet" style="margin-top:8px; font-family:monospace; white-space:pre-wrap;"></div>
+      </div>
+      <div style="flex:1;min-width:300px" class="paper-panel">
+        <h2 id="repHeaderTitle" style="margin:0 0 6px 0">No Repertoire</h2>
+        <div id="repTitle" style="margin:0 0 12px 0;color:#3a3020">No repertoire</div>
+        <div class="root-moves" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr><th>Move</th><th>Games</th><th>W%</th><th>B%</th><th>Action</th></tr>
+            </thead>
+            <tbody id="rootMoves">
+            </tbody>
+          </table>
+        </div>
+        <!-- modal-ish area for responses -->
+        <div id="responses" style="display:none;margin-top:12px">
+          <div class="moves-list">
+            <table id="respTable"><thead><tr><th>Move</th><th>Games</th><th>W%</th><th>B%</th><th></th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div id="log" class="notice"></div>
+      </div>
+    </div>
+    <div style="width:100%;padding:0 20px;box-sizing:border-box;margin-top:18px;">
+      <div id="added-moves" style="width:100%;box-sizing:border-box"></div>
+    </div>
+    <div style="width:100%;padding:0 20px;box-sizing:border-box;">
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+        <button id="saveBtn">Save text</button>
+        <button id="saveCsvBtn" title="For importing into a database or spreadsheet">Save CSV</button>
+        <p class="notice" style="margin-top:6px">Save your repertoire as text or CSV for reloading or importing.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/chess.min.js"></script>
+  <script>
+    // Safer initialization: wait for DOMContentLoaded and ensure chessboard library is available.
+    function loadScript(src){
+      return new Promise((resolve,reject)=>{
+        const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      const API_BASE_DEFAULT = 'https://explorer.lichess.ovh/lichess?ratings=1600,3000';
+      let apiBase = API_BASE_DEFAULT;
+      const statusEl = document.getElementById('status');
+      function setStatus(s){ if(statusEl) statusEl.textContent = s }
+
+      // Ensure chessboard global exists; try to load fallback if not present
+      // if(typeof window.Chessboard === 'undefined'){
+      //   try{
+      //     await loadScript('../js/chessboard.js');
+      //   }catch(e){
+      //     console.warn('Could not load chessboard library fallback', e);
+      //     setStatus('Chessboard library failed to load');
+      //   }
+      // }
+
+      // Create board now that library should be present
+      // const cfg = { draggable:false, position:'start' };
+      // let board = null;
+      // try{ board = Chessboard('board', cfg); }catch(e){ console.warn('Chessboard init failed', e); setStatus('Chessboard init failed'); }
+      let currentFen = 'start';
+      let board = {
+        position: (fen) => { currentFen = fen; updateBoard(fen); },
+        orientation: (color) => { document.querySelector('.board').dataset.orient = color; regenerateBoard(color); updateBoard(currentFen); },
+        flip: () => { const orient = document.querySelector('.board').dataset.orient; board.orientation(orient === 'white' ? 'black' : 'white'); }
+      };
+      const game = new Chess();
+      
+      // Highlight functions for showing from/to squares
+      function clearHighlights(){
+        document.querySelectorAll('.sq.highlight').forEach(sq => sq.classList.remove('highlight'));
+      }
+      
+      function highlightSquares(from, to){
+        clearHighlights();
+        if(from){
+          const fromSq = document.querySelector(`.sq[data-file="${from[0]}"][data-rank="${from[1]}"]`);
+          if(fromSq) fromSq.classList.add('highlight');
+        }
+        if(to){
+          const toSq = document.querySelector(`.sq[data-file="${to[0]}"][data-rank="${to[1]}"]`);
+          if(toSq) toSq.classList.add('highlight');
+        }
+      }
+
+      // Board functions
+      const fenToObj = (fen) => {
+        const obj = {};
+        const [pieces] = fen.split(' ');
+        const rows = pieces.split('/');
+        for(let r = 0; r < 8; r++){
+          let f = 0;
+          for(let c of rows[r]){
+            if(isNaN(c)){
+              obj[(8 - r) + 'abcdefgh'[f]] = {type: c.toLowerCase(), color: c === c.toLowerCase() ? 'b' : 'w'};
+              f++;
+            }else{
+              f += parseInt(c);
+            }
+          }
+        }
+        return obj;
+      };
+
+      const updateBoard = (fen) => {
+        if(fen === 'start') fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+        if(!fen || typeof fen !== 'string') return;
+        const boardObj = fenToObj(fen);
+        const squares = document.querySelectorAll('.sq');
+        squares.forEach(sq => {
+          const key = sq.dataset.rank + sq.dataset.file;
+          const piece = boardObj[key];
+          sq.innerHTML = piece ? `<img class="piece" src="/pieces/${piece.color}${piece.type.toUpperCase()}.svg" alt="">` : '';
+        });
+      };
+
+      const regenerateBoard = (orient) => {
+        const tbody = document.querySelector('.board tbody');
+        tbody.innerHTML = '';
+        const start = orient === 'white' ? 8 : 1;
+        const end = orient === 'white' ? 1 : 8;
+        const step = orient === 'white' ? -1 : 1;
+        for(let rank = start; rank !== end + step; rank += step){
+          const tr = document.createElement('tr');
+          for(let file = 0; file < 8; file++){
+            const th = document.createElement('th');
+            th.className = 'sq ' + ((rank + file) % 2 === 0 ? 'sq-light' : 'sq-dark');
+            th.dataset.rank = rank;
+            th.dataset.file = 'abcdefgh'[file];
+            tr.appendChild(th);
+          }
+          tbody.appendChild(tr);
+        }
+      };
+
+      // Generate board HTML
+      const boardEl = document.getElementById('board');
+      boardEl.innerHTML = '<div class="boardWrap"><table class="board" data-orient="white"><tbody></tbody></table></div>';
+      regenerateBoard('white');
+      updateBoard('start');
+
+      function formatMoves(moves){
+        let str = '';
+        for(let i=0; i<moves.length; i+=2){
+          str += (Math.floor(i/2)+1) + '. ' + moves[i] + (moves[i+1] ? ' ' + moves[i+1] : '') + ' ';
+        }
+        return str.trim();
+      }
+      
+      // Generate HTML with clickable buttons for each move
+      function formatMovesAsButtons(moves, openingName = ''){
+        let html = '';
+        for(let i=0; i<moves.length; i++){
+          const moveNum = Math.floor(i/2) + 1;
+          // Path is the moves BEFORE this one - clicking shows options at that position
+          const pathBefore = moves.slice(0, i).join(' ');
+          if(i % 2 === 0){
+            // White's move - show move number
+            html += `<span class="move-num">${moveNum}.</span>`;
+          }
+          html += `<button class="move-btn" data-path="${pathBefore}">${moves[i]}</button> `;
+        }
+        // Add opening name if provided
+        if(openingName){
+          // Parse opening name - format is usually "Opening: Variation" or just "Opening"
+          const colonIdx = openingName.indexOf(':');
+          if(colonIdx > 0){
+            const mainName = openingName.substring(0, colonIdx).trim();
+            const variation = openingName.substring(colonIdx + 1).trim();
+            html += `<span style="color:#1a5f9a;margin-left:8px;font-weight:500">${mainName}</span>`;
+            if(variation) html += `<span style="color:#2a7a3a;margin-left:4px">: ${variation}</span>`;
+          } else {
+            html += `<span style="color:#1a5f9a;margin-left:8px;font-weight:500">${openingName}</span>`;
+          }
+        }
+        return html;
+      }
+      
+      // Fetch opening name for a position
+      async function getOpeningName(moves){
+        try{
+          const data = await fetchExplorer(moves);
+          return data.opening?.name || '';
+        } catch(e){
+          return '';
+        }
+      }
+
+      function renderMeta(){ 
+        const headerEl = document.getElementById('repHeaderTitle');
+        const guideEl = document.getElementById('repTitle');
+        if(repertoire && repertoire.color === 'black'){
+          headerEl.textContent = 'Black Repertoire';
+          guideEl.textContent = 'Add expected white moves.';
+        } else {
+          headerEl.textContent = 'White Repertoire';
+          // At start, white to move: prompt to choose white's move
+          guideEl.textContent = 'Choose your move.';
+        }
+      }
+
+      // Cache for Lichess API responses to avoid hammering the API
+      const explorerCache = new Map();
+      
+      async function fetchExplorer(moves){
+        // Build FEN from moves instead of using moves parameter
+        const game = new Chess();
+        moves.forEach(move => game.move(move));
+        const fen = game.fen();
+        
+        // Check cache first
+        const cacheKey = fen;
+        if(explorerCache.has(cacheKey)){
+          return explorerCache.get(cacheKey);
+        }
+        
+        const url = `${apiBase}&fen=${encodeURIComponent(fen)}`;
+        const res = await fetch(url);
+        if(!res.ok) throw new Error(res.status+' '+res.statusText);
+        const data = await res.json();
+        
+        // Store in cache
+        explorerCache.set(cacheKey, data);
+        return data;
+      }
+
+      async function loadRootMoves(){
+        const tbody = document.getElementById('rootMoves');
+        tbody.innerHTML = '<tr><td colspan="5">Loading moves…</td></tr>';
+        try{
+          const data = await fetchExplorer([]);
+          const moves = data.moves || data || [];
+          const rows = (moves.map(m=>({san: m.san || m.move || m.uci || m.name, games: (m.white||0)+(m.black||0)+(m.draws||0)||m.games||0, whitePct: m.white?Math.round(100*m.white/((m.white||0)+(m.black||0)+(m.draws||0))):0, blackPct: m.black?Math.round(100*m.black/((m.white||0)+(m.black||0)+(m.draws||0))):0}))).filter(r=>r.games>=minGamesThreshold).sort((a,b)=>b.games-a.games).slice(0,15);
+          tbody.innerHTML='';
+          rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${r.san}</td><td>${r.games}</td><td>${r.whitePct}%</td><td>${r.blackPct}%</td><td><button class="${repertoire.color === 'black' ? 'addMove' : 'viewMove'}" data-move="${r.san}" data-games="${r.games}">${repertoire.color === 'black' ? 'Add' : 'View'}</button></td>`; tbody.appendChild(tr); });
+          tbody.querySelectorAll('button').forEach(btn=>btn.addEventListener('click', async ev=>{ 
+            const btn = ev.target;
+            if(repertoire.color === 'black'){
+              if(btn.className === 'addMove'){
+                const san = btn.getAttribute('data-move');
+                const addedMoves = document.getElementById('added-moves');
+                const movesArr = [san];
+                
+                // Show move on board with highlights
+                const g = new Chess();
+                const moveResult = g.move(san);
+                board.position(g.fen());
+                if(moveResult) highlightSquares(moveResult.from, moveResult.to);
+                
+                // Create group for this first move
+                let group = addedMoves.querySelector(`.move-group[data-first-move="${san}"]`);
+                if(!group){
+                  group = document.createElement('div');
+                  group.className = 'move-group';
+                  group.setAttribute('data-first-move', san);
+                  addedMoves.appendChild(group);
+                }
+                
+                const moveRow = document.createElement('div');
+                moveRow.className = 'move-row';
+                moveRow.setAttribute('data-path', san);
+                const openingName = await getOpeningName(movesArr);
+                moveRow.innerHTML = `${formatMovesAsButtons(movesArr, openingName)}<button class="response-btn" data-path="${san}" title="next move"> </button>`;
+                group.appendChild(moveRow);
+                
+                // Clear other current moves and set this row's last move to current
+                document.querySelectorAll('.move-btn.current').forEach(b => b.classList.remove('current'));
+                document.querySelectorAll('.move-btn.selected').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.move-btn.gray').forEach(b => b.classList.remove('gray'));
+                document.querySelectorAll('.response-btn.active').forEach(b => b.classList.remove('active'));
+                const lastMoveBtn = moveRow.querySelector('.move-btn:last-of-type');
+                if(lastMoveBtn) lastMoveBtn.classList.add('current');
+                
+                document.getElementById('root-btn').style.display = 'none';
+                btn.textContent = 'Remove';
+                btn.className = 'removeMove';
+              } else if(btn.className === 'removeMove'){
+                const san = btn.getAttribute('data-move');
+                const addedMoves = document.getElementById('added-moves');
+                // Remove the entire group for this first move
+                const group = addedMoves.querySelector(`.move-group[data-first-move="${san}"]`);
+                if(group) group.remove();
+                
+                // Reset board to starting position and clear highlights
+                game.reset();
+                board.position('start');
+                clearHighlights();
+                
+                if(addedMoves.querySelectorAll('.move-row').length === 0){
+                  document.getElementById('root-btn').style.display = 'block';
+                }
+                btn.textContent = 'Add';
+                btn.className = 'addMove';
+              }
+            } else {
+              if (btn.className === 'viewMove') {
+                // reset all to view
+                tbody.querySelectorAll('.viewMove, .applyMove').forEach(b => {
+                  b.textContent = 'View';
+                  b.className = 'viewMove';
+                  b.style.color = '';
+                });
+                // reset row colors
+                tbody.querySelectorAll('tr').forEach(tr => tr.style.color = '');
+                // view: update board
+                const san = btn.getAttribute('data-move');
+                const g = new Chess();
+                const moveResult = g.move(san);
+                board.position(g.fen());
+                if(moveResult) highlightSquares(moveResult.from, moveResult.to);
+                // highlight row
+                const tr = btn.closest('tr');
+                tr.style.color = 'lightblue';
+                // change button to Apply
+                btn.textContent = 'Apply';
+                btn.className = 'applyMove';
+                btn.style.color = 'lightblue';
+              } else if (btn.className === 'applyMove') {
+                // apply: add
+                const san = btn.getAttribute('data-move');
+                const games = parseInt(btn.getAttribute('data-games'));
+                const pathKey = '';
+                if(!repertoire.tree[pathKey]) repertoire.tree[pathKey] = { moves: [], children: {} };
+                repertoire.tree[pathKey].moves.push({ san, games });
+                const childKey = san;
+                if(!repertoire.tree[childKey]) repertoire.tree[childKey] = { moves: [], children: {} };
+                setStatus(`Added ${san} at start`);
+                try {
+                  const data2 = await fetchExplorer([san]);
+                  const resp = data2.moves || data2 || [];
+                  repertoire.tree[childKey].moves = (resp.map(m => ({
+                    san: m.san || m.move || m.name || m.uci,
+                    games: (m.white || 0) + (m.black || 0) + (m.draws || 0) || m.games || 0
+                  })).filter(x => x.games >= minGamesThreshold));
+                } catch(e) {
+                  console.warn('populate child responses failed', e);
+                }
+                renderMeta();
+                await showResponses([san]);
+              }
+            }
+          }));
+        }catch(err){ tbody.innerHTML = '<tr><td colspan="5" class="error">Could not load moves: '+err.message+'</td></tr>'; }
+      }
+
+      async function showResponses(moves, options = {}){
+        const { changingMove, originalLinePath } = options;
+        
+        game.reset();
+        try{ moves.forEach(m=>game.move(m)); }catch(e){ console.warn('apply moves error', e); }
+        board.position(game.fen());
+        document.getElementById('scoresheet').textContent = formatMoves(moves);
+        document.getElementById('responses').style.display = 'block';
+        document.querySelector('.root-moves').style.display = 'none'; // Hide root moves table
+        
+        // Update title based on whose turn it is and if changing
+        const isWhiteTurn = moves.length % 2 === 0;
+        if(changingMove){
+          document.getElementById('repTitle').textContent = 'Change your response?';
+        } else if(repertoire.color === 'black'){
+          if(isWhiteTurn){
+            document.getElementById('repTitle').textContent = 'Add expected white moves.';
+          } else {
+            document.getElementById('repTitle').textContent = 'Choose your reply.';
+          }
+        } else {
+          if(isWhiteTurn){
+            document.getElementById('repTitle').textContent = 'Choose your move.';
+          } else {
+            document.getElementById('repTitle').textContent = 'Add expected black moves.';
+          }
+        }
+        
+        const tbody = document.querySelector('#respTable tbody');
+        tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+        try{
+          const data = await fetchExplorer(moves);
+          const movesList = data.moves || data || [];
+          const moveItems = movesList.map(m=>{
+            const san = m.san || m.move || m.name || m.uci;
+            const games = (m.white||0)+(m.black||0)+(m.draws||0) || m.games || 0;
+            const whitePct = m.white ? Math.round(100*m.white/((m.white||0)+(m.black||0)+(m.draws||0))) : 0;
+            const blackPct = m.black ? Math.round(100*m.black/((m.white||0)+(m.black||0)+(m.draws||0))) : 0;
+            return {san, games, whitePct, blackPct};
+          }).filter(m => m.games >= minGamesThreshold).sort((a,b)=>b.games-a.games).slice(0,11);
+          tbody.innerHTML = '';
+          const addedMoves = document.getElementById('added-moves');
+          // Find which moves have already been added at this position
+          let addedSans = [];
+          const currentPath = moves.join(' ');
+          // Look at all lines and see which ones extend from this path
+          const allRows = addedMoves.querySelectorAll('.move-row');
+          allRows.forEach(row => {
+            const rowPath = row.getAttribute('data-path') || '';
+            const rowMoves = rowPath ? rowPath.split(' ') : [];
+            // Check if this row starts with our current path and has at least one more move
+            if(rowMoves.length > moves.length){
+              const matchesPath = moves.length === 0 || moves.every((m, i) => rowMoves[i] === m);
+              if(matchesPath){
+                // Add the next move after our current path
+                const nextMove = rowMoves[moves.length];
+                if(!addedSans.includes(nextMove)){
+                  addedSans.push(nextMove);
+                }
+              }
+            }
+          });
+          
+          moveItems.forEach(m=>{
+            const tr=document.createElement('tr');
+            const isWhiteTurn = moves.length % 2 === 0;
+            const isAdded = addedSans.includes(m.san);
+            let buttonClass, buttonText;
+            
+            if(changingMove){
+              // When changing an existing move - the current move shows Apply, others show View
+              if(m.san === changingMove){
+                buttonClass = 'applyMove';
+                buttonText = 'Apply';
+                tr.style.color = 'lightblue';
+              } else {
+                buttonClass = 'viewMove';
+                buttonText = 'View';
+              }
+            } else if(repertoire.color === 'black'){
+              // For black repertoire: white's moves (isWhiteTurn) = opponent moves = Add/Remove
+              // Black's moves (!isWhiteTurn) = your moves = View/Apply
+              buttonClass = isWhiteTurn ? (isAdded ? 'removeMove' : 'addMove') : 'viewMove';
+              buttonText = isWhiteTurn ? (isAdded ? 'Remove' : 'Add') : 'View';
+            } else {
+              // For white repertoire: white's moves = your moves = View/Apply
+              // Black's moves = opponent moves = Add/Remove
+              const isOpponentMove = !isWhiteTurn;
+              buttonClass = isOpponentMove ? (isAdded ? 'removeMove' : 'addMove') : 'viewMove';
+              buttonText = isOpponentMove ? (isAdded ? 'Remove' : 'Add') : 'View';
+            }
+            tr.innerHTML = `<td>${m.san}</td><td>${m.games}</td><td>${m.whitePct}%</td><td>${m.blackPct}%</td><td><button class="${buttonClass}" data-san="${m.san}" data-games="${m.games}">${buttonText}</button></td>`;
+            tbody.appendChild(tr);
+          });
+          
+          // Show message if no moves found
+          if(moveItems.length === 0){
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#5a5040">No moves found</td></tr>';
+          }
+          
+          // Handle view/apply move clicks with debounce to prevent double-clicks
+          let lastClickTime = 0;
+          tbody.onclick = async (e) => {
+            const now = Date.now();
+            if(now - lastClickTime < 250) return; // Ignore clicks within 250ms
+            lastClickTime = now;
+            
+            const btn = e.target;
+            const isWhiteTurn = moves.length % 2 === 0;
+            
+            // Determine if this is an opponent's move (Add/Remove) or your move (View/Apply)
+            const isOpponentMove = (repertoire.color === 'black' && isWhiteTurn) || 
+                                   (repertoire.color === 'white' && !isWhiteTurn);
+            
+            if(isOpponentMove){
+              if(btn.className === 'addMove'){
+                const san = btn.getAttribute('data-san');
+                const addedMoves = document.getElementById('added-moves');
+                const newMoves = moves.concat([san]);
+                const newPath = newMoves.join(' ');
+                const currentPath = moves.join(' ');
+                const firstMove = newMoves[0];
+                
+                // Show this move on the board with highlights
+                const g = new Chess();
+                let moveResult = null;
+                try {
+                  moves.forEach(mv => g.move(mv));
+                  moveResult = g.move(san);
+                } catch(e) {}
+                board.position(g.fen());
+                if(moveResult) highlightSquares(moveResult.from, moveResult.to);
+                
+                // Find if there's an existing line at current path that we can update
+                let existingRow = null;
+                const allRows = Array.from(addedMoves.querySelectorAll('.move-row'));
+                for(let row of allRows){
+                  const rowPath = row.getAttribute('data-path') || '';
+                  if(rowPath === currentPath){
+                    existingRow = row;
+                    break;
+                  }
+                }
+                
+                if(existingRow){
+                  // Update the existing line instead of creating new
+                  existingRow.setAttribute('data-path', newPath);
+                  const openingName = await getOpeningName(newMoves);
+                  existingRow.innerHTML = `${formatMovesAsButtons(newMoves, openingName)}<button class="response-btn" data-path="${newPath}" title="next move"> </button>`;
+                  // Clear other current moves and set this row's last move to current
+                  document.querySelectorAll('.move-btn.current').forEach(b => b.classList.remove('current'));
+                  document.querySelectorAll('.move-btn.selected').forEach(b => b.classList.remove('selected'));
+                  document.querySelectorAll('.move-btn.gray').forEach(b => b.classList.remove('gray'));
+                  document.querySelectorAll('.response-btn.active').forEach(b => b.classList.remove('active'));
+                  const lastMoveBtn = existingRow.querySelector('.move-btn:last-of-type');
+                  if(lastMoveBtn) lastMoveBtn.classList.add('current');
+                } else {
+                  // No existing line at this path - create new line and insert in sorted position
+                  let group = addedMoves.querySelector(`.move-group[data-first-move="${firstMove}"]`);
+                  if(!group){
+                    group = document.createElement('div');
+                    group.className = 'move-group';
+                    group.setAttribute('data-first-move', firstMove);
+                    addedMoves.appendChild(group);
+                  }
+                  
+                  const moveRow = document.createElement('div');
+                  moveRow.className = 'move-row';
+                  moveRow.setAttribute('data-path', newPath);
+                  const openingName = await getOpeningName(newMoves);
+                  moveRow.innerHTML = `${formatMovesAsButtons(newMoves, openingName)}<button class="response-btn" data-path="${newPath}" title="next move"> </button>`;
+                  
+                  // Clear other current moves and set this row's last move to current
+                  document.querySelectorAll('.move-btn.current').forEach(b => b.classList.remove('current'));
+                  document.querySelectorAll('.move-btn.selected').forEach(b => b.classList.remove('selected'));
+                  document.querySelectorAll('.move-btn.gray').forEach(b => b.classList.remove('gray'));
+                  document.querySelectorAll('.response-btn.active').forEach(b => b.classList.remove('active'));
+                  const lastMoveBtn = moveRow.querySelector('.move-btn:last-of-type');
+                  if(lastMoveBtn) lastMoveBtn.classList.add('current');
+                  
+                  // Insert in sorted position - find where this line belongs
+                  // Lines should be grouped by their shared prefix
+                  const groupRows = Array.from(group.querySelectorAll('.move-row'));
+                  let insertBefore = null;
+                  for(let row of groupRows){
+                    const rowPath = row.getAttribute('data-path') || '';
+                    // Find lines that share our prefix (currentPath) and insert after them
+                    // Or find where alphabetically this belongs
+                    if(rowPath > newPath && !rowPath.startsWith(currentPath + ' ')){
+                      insertBefore = row;
+                      break;
+                    }
+                  }
+                  
+                  // Find the last line that shares our prefix to insert after it
+                  let insertAfter = null;
+                  for(let i = groupRows.length - 1; i >= 0; i--){
+                    const rowPath = groupRows[i].getAttribute('data-path') || '';
+                    if(rowPath.startsWith(currentPath + ' ') || rowPath === currentPath){
+                      insertAfter = groupRows[i];
+                      break;
+                    }
+                  }
+                  
+                  if(insertAfter && insertAfter.nextSibling){
+                    group.insertBefore(moveRow, insertAfter.nextSibling);
+                  } else if(insertBefore){
+                    group.insertBefore(moveRow, insertBefore);
+                  } else {
+                    group.appendChild(moveRow);
+                  }
+                }
+                
+                document.getElementById('root-btn').style.display = 'none';
+                btn.textContent = 'Remove';
+                btn.className = 'removeMove';
+              } else if(btn.className === 'removeMove'){
+                const san = btn.getAttribute('data-san');
+                const addedMoves = document.getElementById('added-moves');
+                const newMoves = moves.concat([san]);
+                const targetPath = newMoves.join(' ');
+                
+                // Show the position before this move (put the piece back) and clear highlights
+                const g = new Chess();
+                try {
+                  moves.forEach(mv => g.move(mv));
+                } catch(e) {}
+                board.position(g.fen());
+                clearHighlights();
+                
+                // Remove all lines that start with this path
+                const rows = addedMoves.querySelectorAll('.move-row');
+                for(let row of rows){
+                  const rowPath = row.getAttribute('data-path') || '';
+                  if(rowPath === targetPath || rowPath.startsWith(targetPath + ' ')){
+                    row.remove();
+                  }
+                }
+                // Clean up empty groups
+                addedMoves.querySelectorAll('.move-group').forEach(g => {
+                  if(g.querySelectorAll('.move-row').length === 0) g.remove();
+                });
+                if(addedMoves.querySelectorAll('.move-row').length === 0){
+                  document.getElementById('root-btn').style.display = 'block';
+                }
+                btn.textContent = 'Add';
+                btn.className = 'addMove';
+              }
+            } else {
+              if (btn.className === 'viewMove') {
+                // reset
+                tbody.querySelectorAll('.viewMove, .applyMove').forEach(btn => {
+                  btn.textContent = 'View';
+                  btn.className = 'viewMove';
+                  btn.style.color = '';
+                });
+                // reset row colors
+                tbody.querySelectorAll('tr').forEach(tr => tr.style.color = '');
+                // view
+                const san = btn.getAttribute('data-san');
+                const g2 = new Chess();
+                let moveResult = null;
+                try {
+                  moves.forEach(mv => g2.move(mv));
+                  moveResult = g2.move(san);
+                } catch(e) {}
+                board.position(g2.fen());
+                if(moveResult) highlightSquares(moveResult.from, moveResult.to);
+                // highlight row
+                const tr = btn.closest('tr');
+                tr.style.color = 'lightblue';
+                // change button to Apply
+                btn.textContent = 'Apply';
+                btn.className = 'applyMove';
+                btn.style.color = 'lightblue';
+              } else if (btn.className === 'applyMove') {
+                // apply: add your response (black's move for black repertoire)
+                const san = btn.getAttribute('data-san');
+                const games = parseInt(btn.getAttribute('data-games'));
+                const pathKey = moves.join(' ');
+                if(!repertoire.tree[pathKey]) repertoire.tree[pathKey] = { moves: [], children: {} };
+                repertoire.tree[pathKey].moves.push({ san, games });
+                const childKey = (moves.concat([san])).join(' ');
+                if(!repertoire.tree[childKey]) repertoire.tree[childKey] = { moves: [], children: {} };
+                setStatus(`Added ${san} at ${pathKey||'start'}`);
+                try {
+                  const data2 = await fetchExplorer(moves.concat([san]));
+                  const resp = data2.moves || data2 || [];
+                  repertoire.tree[childKey].moves = (resp.map(m => ({
+                    san: m.san || m.move || m.name || m.uci,
+                    games: (m.white || 0) + (m.black || 0) + (m.draws || 0) || m.games || 0
+                  })).filter(x => x.games >= minGamesThreshold));
+                } catch(e) {
+                  console.warn('populate child responses failed', e);
+                }
+                
+                const addedMoves = document.getElementById('added-moves');
+                const newMoves = moves.concat([san]);
+                const newPath = newMoves.join(' ');
+                const currentPath = moves.join(' ');
+                const firstMove = newMoves[0];
+                
+                if(changingMove && originalLinePath){
+                  if(san === changingMove) return; // No change needed
+                  // Changing an existing move - find the line and truncate/replace
+                  const allRows = addedMoves.querySelectorAll('.move-row');
+                  const openingName = await getOpeningName(newMoves);
+                  // Clear other active buttons
+                  document.querySelectorAll('.response-btn.active').forEach(b => b.classList.remove('active'));
+                  allRows.forEach(row => {
+                    const rowPath = row.getAttribute('data-path') || '';
+                    if(rowPath === originalLinePath || rowPath.startsWith(originalLinePath)){
+                      // This is the line we're changing - truncate to new path
+                      row.setAttribute('data-path', newPath);
+                      row.innerHTML = `${formatMovesAsButtons(newMoves, openingName)}<button class="response-btn active" data-path="${newPath}"> </button>`;
+                    }
+                  });
+                  // Remove other lines that had the old move
+                  const oldPrefix = moves.concat([changingMove]).join(' ');
+                  allRows.forEach(r => {
+                    const rPath = r.getAttribute('data-path') || '';
+                    if(rPath === oldPrefix || rPath.startsWith(oldPrefix + ' ')){
+                      r.remove();
+                    }
+                  });
+                } else {
+                  // Normal apply - update lines that match current path
+                  const allRows = addedMoves.querySelectorAll('.move-row');
+                  const openingName = await getOpeningName(newMoves);
+                  // Clear other active buttons
+                  document.querySelectorAll('.response-btn.active').forEach(b => b.classList.remove('active'));
+                  allRows.forEach(row => {
+                    const rowPath = row.getAttribute('data-path') || '';
+                    if(rowPath === currentPath){
+                      row.setAttribute('data-path', newPath);
+                      row.innerHTML = `${formatMovesAsButtons(newMoves, openingName)}<button class="response-btn active" data-path="${newPath}"> </button>`;
+                    }
+                  });
+                }
+                
+                // Continue to next level
+                await showResponses(newMoves);
+                renderMeta();
+              }
+            }
+          };
+        } catch(err) {
+          tbody.innerHTML = '<tr><td colspan="5" class="error">Could not load responses: '+err.message+'</td></tr>';
+        }
+      }
+
+      // Wire splash/create controls
+      document.getElementById('splashLoad').addEventListener('click', ()=>{ 
+        document.getElementById('fileInput').click(); 
+      });
+      
+      document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        
+        try {
+          const text = await file.text();
+          let lines = text.split('\n');
+          const isCsv = file.name.toLowerCase().endsWith('.csv') || (lines[0] && lines[0].includes(','));
+          
+          // Parse header to get color
+          let color = 'black';
+          if(!isCsv){
+            if(lines[0] && lines[0].toLowerCase().includes('white')){
+              color = 'white';
+            } else if(lines[0] && lines[0].toLowerCase().includes('black')){
+              color = 'black';
+            }
+          } else {
+            // CSV: try header "color" column or fallback to default
+            const header = lines[0] ? lines[0].trim() : '';
+            const cols = header.split(',').map(s=>s.trim().toLowerCase());
+            const colorIdx = cols.indexOf('color');
+            if(colorIdx >= 0 && lines.length > 1){
+              const firstRowCols = csvParseLine(lines[1]);
+              const c = (firstRowCols[colorIdx]||'').toLowerCase();
+              if(c.includes('white')) color = 'white';
+              else if(c.includes('black')) color = 'black';
+            }
+          }
+          
+          // Set up repertoire
+          minGamesThreshold = 10000;
+          repertoire = { name: 'Loaded Repertoire', color: color, tree: {} };
+          repertoire.tree[''] = { moves: [], children: {} };
+          renderMeta();
+          board.orientation(color);
+          board.position('start');
+          setStatus('Loaded ' + file.name);
+          document.getElementById('scoresheet').textContent = '';
+          
+          const addedMoves = document.getElementById('added-moves');
+          addedMoves.innerHTML = '<button id="root-btn">1: </button>';
+          
+          // Parse each line and create move rows
+          if(!isCsv){
+            for(let line of lines){
+              line = line.trim();
+              if(!line || line.startsWith('=') || line.toLowerCase().includes('repertoire')) continue;
+              
+              // Extract moves from the line (format: "1. e4 e5 2. Nf3 Nc6 - Opening Name")
+              const dashIdx = line.indexOf(' - ');
+              const movePart = dashIdx > 0 ? line.substring(0, dashIdx) : line;
+              const openingPart = dashIdx > 0 ? line.substring(dashIdx + 3) : '';
+              
+              // Parse moves - remove move numbers
+              const moves = [];
+              const tokens = movePart.split(/\s+/);
+              for(let token of tokens){
+                // Skip move numbers like "1." or "2."
+                if(token.match(/^\d+\.$/)) continue;
+                if(token) moves.push(token);
+              }
+              
+              if(moves.length === 0) continue;
+              
+              const firstMove = moves[0];
+              const path = moves.join(' ');
+              
+              // Create or find group
+              let group = addedMoves.querySelector(`.move-group[data-first-move="${firstMove}"]`);
+              if(!group){
+                group = document.createElement('div');
+                group.className = 'move-group';
+                group.setAttribute('data-first-move', firstMove);
+                addedMoves.appendChild(group);
+              }
+              
+              // Create move row
+              const moveRow = document.createElement('div');
+              moveRow.className = 'move-row';
+              moveRow.setAttribute('data-path', path);
+              
+              // Build HTML with opening name
+              let openingHtml = '';
+              if(openingPart){
+                const colonIdx = openingPart.indexOf(':');
+                if(colonIdx > 0){
+                  const mainName = openingPart.substring(0, colonIdx).trim();
+                  const variation = openingPart.substring(colonIdx + 1).trim();
+                  openingHtml = `<span style="color:#1a5f9a;margin-left:8px;font-weight:500">${mainName}</span>`;
+                  if(variation) openingHtml += `<span style="color:#2a7a3a;margin-left:4px">: ${variation}</span>`;
+                } else {
+                  openingHtml = `<span style="color:#1a5f9a;margin-left:8px;font-weight:500">${openingPart}</span>`;
+                }
+              }
+              
+              moveRow.innerHTML = `${formatMovesAsButtons(moves, '')}${openingHtml}<button class="response-btn" data-path="${path}"> </button>`;
+              group.appendChild(moveRow);
+            }
+          } else {
+            // CSV format expected columns: moves,opening,variation,color(optional)
+            // Header detection
+            const headerCols = csvParseLine(lines[0]).map(s=>s.trim().toLowerCase());
+            const movesIdx = headerCols.indexOf('moves');
+            const openingIdx = headerCols.indexOf('opening');
+            const variationIdx = headerCols.indexOf('variation');
+            for(let i=1;i<lines.length;i++){
+              const line = lines[i].trim();
+              if(!line) continue;
+              const cols = csvParseLine(line);
+              const movesStr = movesIdx>=0 ? (cols[movesIdx]||'') : cols[0]||'';
+              const openingName = openingIdx>=0 ? (cols[openingIdx]||'') : '';
+              const variation = variationIdx>=0 ? (cols[variationIdx]||'') : '';
+              const moves = movesStr.split(/\s+/).filter(Boolean);
+              if(moves.length===0) continue;
+              const firstMove = moves[0];
+              const path = moves.join(' ');
+              let group = addedMoves.querySelector(`.move-group[data-first-move="${firstMove}"]`);
+              if(!group){
+                group = document.createElement('div');
+                group.className = 'move-group';
+                group.setAttribute('data-first-move', firstMove);
+                addedMoves.appendChild(group);
+              }
+              const moveRow = document.createElement('div');
+              moveRow.className = 'move-row';
+              moveRow.setAttribute('data-path', path);
+              let openingHtml = '';
+              if(openingName){
+                openingHtml = `<span style="color:#1a5f9a;margin-left:8px;font-weight:500">${openingName}</span>`;
+                if(variation){
+                  openingHtml += `<span style="color:#2a7a3a;margin-left:4px">: ${variation}</span>`;
+                }
+              }
+              moveRow.innerHTML = `${formatMovesAsButtons(moves, '')}${openingHtml}<button class="response-btn" data-path="${path}"> </button>`;
+              group.appendChild(moveRow);
+            }
+          }
+          
+          document.getElementById('root-btn').style.display = addedMoves.querySelectorAll('.move-row').length > 0 ? 'none' : 'block';
+          document.getElementById('splash').style.display = 'none';
+          document.getElementById('main').style.display = 'flex';
+          
+          // Navigate to end of first line and make it active
+          const firstRow = addedMoves.querySelector('.move-row');
+          if(firstRow){
+            const path = firstRow.getAttribute('data-path') || '';
+            const moves = path.split(' ').filter(m => m);
+            
+            // Set board position
+            game.reset();
+            moves.forEach(m => game.move(m));
+            board.position(game.fen());
+            
+            // Highlight last move
+            if(moves.length > 0){
+              const g = new Chess();
+              for(let i = 0; i < moves.length - 1; i++) g.move(moves[i]);
+              const lastMoveResult = g.move(moves[moves.length - 1]);
+              if(lastMoveResult) highlightSquares(lastMoveResult.from, lastMoveResult.to);
+            }
+            
+            // Make response button active
+            const respBtn = firstRow.querySelector('.response-btn');
+            if(respBtn) respBtn.classList.add('active');
+            
+            // Show responses for this position
+            showResponses(moves);
+          } else {
+            loadRootMoves();
+          }
+          
+        } catch(err){
+          setStatus('Error loading file: ' + err.message);
+        }
+        
+        // Reset file input so same file can be loaded again
+        e.target.value = '';
+      });
+      
+      document.getElementById('splashCreate').addEventListener('click', ()=>{ document.getElementById('createChoices').style.display='flex'; document.getElementById('splashCreate').style.display='none'; });
+      document.getElementById('playWhite').addEventListener('click', ()=>{ minGamesThreshold = 10000; repertoire = { name:'New Repertoire', color:'white', tree:{} }; repertoire.tree['']={moves:[],children:{}}; renderMeta(); board.orientation('white'); board.position('start'); setStatus('White to move'); document.getElementById('scoresheet').textContent = ''; const addedMoves = document.getElementById('added-moves'); addedMoves.innerHTML = '<button id="root-btn">1: </button>'; document.getElementById('splash').style.display='none'; document.getElementById('main').style.display='flex'; loadRootMoves(); });
+      document.getElementById('playBlack').addEventListener('click', ()=>{ minGamesThreshold = 10000; repertoire = { name:'New Repertoire', color:'black', tree:{} }; repertoire.tree['']={moves:[],children:{}}; renderMeta(); board.orientation('black'); board.position('start'); setStatus('White to move'); document.getElementById('scoresheet').textContent = ''; const addedMoves = document.getElementById('added-moves'); addedMoves.innerHTML = '<button id="root-btn">1: </button>'; document.getElementById('splash').style.display='none'; document.getElementById('main').style.display='flex'; loadRootMoves(); });
+
+      // done init
+      setStatus('Ready');
+      
+      // event for added-moves
+      document.getElementById('added-moves').addEventListener('click', (e) => {
+        if(e.target.id === 'root-btn'){
+          // Reset all response buttons to normal
+          document.querySelectorAll('.response-btn.active').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.move-btn.current').forEach(btn => btn.classList.remove('current'));
+          document.querySelectorAll('.move-btn.selected').forEach(btn => btn.classList.remove('selected'));
+          document.querySelectorAll('.move-btn.gray').forEach(btn => btn.classList.remove('gray'));
+          clearHighlights();
+          showResponses([]);
+        } else if(e.target.classList.contains('move-btn')){
+          // Reset all response buttons to normal
+          document.querySelectorAll('.response-btn.active').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.move-btn.current').forEach(btn => btn.classList.remove('current'));
+          document.querySelectorAll('.move-btn.selected').forEach(btn => btn.classList.remove('selected'));
+          document.querySelectorAll('.move-btn.gray').forEach(btn => btn.classList.remove('gray'));
+          // Make this move button selected
+          e.target.classList.add('selected');
+          // Get the full line path from the parent row
+          const row = e.target.closest('.move-row');
+          const fullLinePath = row ? row.getAttribute('data-path') : '';
+          // Clicking on an individual move button
+          const pathStr = e.target.getAttribute('data-path');
+          const path = pathStr ? pathStr.split(' ').filter(m => m) : [];
+          const clickedMove = e.target.textContent;
+          // Gray out the moves after this one in the line
+          if(row){
+            const buttons = Array.from(row.querySelectorAll('.move-btn'));
+            const index = buttons.indexOf(e.target);
+            for(let i = index + 1; i < buttons.length; i++){
+              buttons[i].classList.add('gray');
+            }
+          }
+          // Gray in other lines with the same prefix
+          const allRows = document.querySelectorAll('.move-row');
+          allRows.forEach(otherRow => {
+            if(otherRow !== row){
+              const buttons = Array.from(otherRow.querySelectorAll('.move-btn'));
+              if(buttons.length - path.length > 0){
+                let matches = true;
+                let i = 0;
+                while(i < path.length){
+                  if(buttons[i].textContent !== path[i]){
+                    matches = false;
+                    break;
+                  }
+                  i++;
+                }
+                if(matches && buttons[path.length].textContent === clickedMove){
+                  let k = path.length;
+                  while(k < buttons.length){
+                    buttons[k].classList.add('gray');
+                    k++;
+                  }
+                }
+              }
+            }
+          });
+          // Show the position after this move, clear highlights
+          const movesToShow = path.concat([clickedMove]);
+          const g = new Chess();
+          try {
+            path.forEach(mv => g.move(mv));
+            g.move(clickedMove);
+          } catch(e) {}
+          board.position(g.fen());
+          clearHighlights();
+          
+          // Determine if this is clicking on your own move (to change it)
+          // path.length is the number of moves BEFORE the clicked move
+          // For black repertoire: your moves are at odd indices (1, 3, 5...) so path.length is odd (1, 3, 5...)
+          // For white repertoire: your moves are at even indices (0, 2, 4...) so path.length is even (0, 2, 4...)
+          const isYourMove = (repertoire.color === 'black' && path.length % 2 === 1) ||
+                            (repertoire.color === 'white' && path.length % 2 === 0);
+          
+          if(isYourMove){
+            // Allow changing - show options at the position BEFORE the clicked move
+            // Pass the clicked move so it can be highlighted as current choice
+            showResponses(path, { changingMove: clickedMove, originalLinePath: fullLinePath });
+            // Set board back to the position after the clicked move
+            board.position(g.fen());
+          } else {
+            // Opponent move - don't show options or best moves, hide responses
+            document.getElementById('responses').style.display = 'none';
+            document.querySelector('.root-moves').style.display = 'block';
+          }
+        } else if(e.target.classList.contains('response-btn')){
+          // Clicking on empty response button - show options to respond
+          // Reset all response buttons to normal
+          document.querySelectorAll('.response-btn.active').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.move-btn.current').forEach(btn => btn.classList.remove('current'));
+          document.querySelectorAll('.move-btn.selected').forEach(btn => btn.classList.remove('selected'));
+          document.querySelectorAll('.move-btn.gray').forEach(btn => btn.classList.remove('gray'));
+          // Make this one active
+          e.target.classList.add('active');
+          
+          const pathStr = e.target.getAttribute('data-path');
+          const path = pathStr ? pathStr.split(' ').filter(m => m) : [];
+          clearHighlights();
+          showResponses(path);
+        }
+      });
+      
+      // Save button functionality
+      document.getElementById('saveBtn').addEventListener('click', () => {
+        const addedMoves = document.getElementById('added-moves');
+        const rows = addedMoves.querySelectorAll('.move-row');
+        
+        // Build a nice text representation
+        let lines = [];
+        let currentGroup = '';
+        
+        rows.forEach(row => {
+          const group = row.closest('.move-group');
+          const groupName = group ? group.getAttribute('data-first-move') : '';
+          
+          // Add blank line between groups
+          if(groupName !== currentGroup && lines.length > 0){
+            lines.push('');
+          }
+          currentGroup = groupName;
+          
+          // Get the path and opening name from the row
+          const rowPath = row.getAttribute('data-path') || '';
+          const moves = rowPath ? rowPath.split(' ') : [];
+          
+          // Format as scoresheet
+          let line = '';
+          for(let i = 0; i < moves.length; i += 2){
+            const moveNum = Math.floor(i / 2) + 1;
+            line += moveNum + '. ' + moves[i];
+            if(moves[i + 1]){
+              line += ' ' + moves[i + 1];
+            }
+            line += ' ';
+          }
+          
+          // Get opening name if present (from the span elements)
+          const openingSpan = row.querySelector('span[style*="#1a5f9a"]');
+          const variationSpan = row.querySelector('span[style*="#2a7a3a"]');
+          if(openingSpan){
+            line += ' - ' + openingSpan.textContent.trim();
+            if(variationSpan){
+              line += variationSpan.textContent.trim();
+            }
+          }
+          
+          lines.push(line.trim());
+        });
+        
+        // Add header
+        const header = `${repertoire.color.charAt(0).toUpperCase() + repertoire.color.slice(1)} Repertoire\n${'='.repeat(40)}\n\n`;
+        const content = header + lines.join('\n');
+        
+        // Create and trigger download
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = repertoire.color + '_repertoire.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+        // CSV helper: parse a CSV line with quotes
+        function csvParseLine(line){
+          const out=[];let cur='';let inQ=false;
+          for(let i=0;i<line.length;i++){
+            const ch=line[i];
+            if(inQ){
+              if(ch==='"'){
+                if(line[i+1]==='"'){ cur+='"'; i++; }
+                else { inQ=false; }
+              } else { cur+=ch; }
+            } else {
+              if(ch===','){ out.push(cur); cur=''; }
+              else if(ch==='"'){ inQ=true; }
+              else { cur+=ch; }
+            }
+          }
+          out.push(cur);
+          return out;
+        }
+
+        // Save CSV functionality
+        document.getElementById('saveCsvBtn').addEventListener('click', () => {
+          const addedMoves = document.getElementById('added-moves');
+          const rows = addedMoves.querySelectorAll('.move-row');
+          const header = ['moves','opening','variation','color'];
+          const csvLines = [header.join(',')];
+          rows.forEach(row=>{
+            const rowPath = row.getAttribute('data-path')||'';
+            const moves = rowPath.split(' ').filter(Boolean).join(' ');
+            const openingSpan = row.querySelector('span[style*="#1a5f9a"]');
+            const variationSpan = row.querySelector('span[style*="#2a7a3a"]');
+            const opening = openingSpan ? openingSpan.textContent.trim() : '';
+            const variation = variationSpan ? variationSpan.textContent.trim().replace(/^:\s*/, '') : '';
+            const color = repertoire.color||'';
+            const cols = [moves, opening, variation, color].map(v=>{
+              const s = (v||'');
+              if(s.includes(',') || s.includes('"') || s.includes('\n')){
+                return '"' + s.replace(/"/g,'""') + '"';
+              }
+              return s;
+            });
+            csvLines.push(cols.join(','));
+          });
+          const blob = new Blob([csvLines.join('\n')], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = repertoire.color + '_repertoire.csv';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+    });
+  </script>
+  <div style="text-align:center;margin-top:24px;padding-bottom:24px">
+    <a href="/" style="display:inline-block;padding:10px 20px;background:#3a3f44;color:#e6eef6;text-decoration:none;border-radius:6px;border:1px solid var(--border)">Home</a>
+  </div>
+</div>
+</body>
+</html>
