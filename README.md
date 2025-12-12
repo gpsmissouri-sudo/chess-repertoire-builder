@@ -1,68 +1,26 @@
-# 📘 Chess Repertoire Builder
-*A lightweight browser tool for exploring openings and building custom repertoires using the official **Lichess Opening Explorer API** and high-quality piece artwork by [**Maurizio Monge**](https://github.com/mauriziomonge/chess-pieces).*
+# Chess Repertoire Builder
+A lightweight browser-based tool for exploring chess openings and building custom repertoires using data from the **Lichess Opening Explorer API**. Chess piece artwork: https://github.com/mauriziomonge/chess-pieces
 
-## 🎯 Overview
-Chess Repertoire Builder is a self-contained HTML/JavaScript application that lets you study chess openings, browse statistics, and assemble your own repertoire — all directly in your browser.
+## Overview
+Chess Repertoire Builder is a self-contained HTML/JavaScript application that lets you explore opening lines, view statistics, and assemble a personalized repertoire directly in the browser. It retrieves move data from the Lichess Opening Explorer API, providing statistics from millions of games across rating levels and time controls.
 
-The project uses **live data from the Lichess Opening Explorer**, giving you real-world statistics based on millions of games from multiple rating levels and time controls.
+## Features
+- Pulls moves and statistics from the Lichess Opening Explorer API  
+- Shows move popularity and win/draw/loss rates  
+- Add moves to a personal opening tree and edit lines interactively  
+- Save and load repertoires using LocalStorage (no account or backend required)  
+- Works for both White and Black lines
 
-Try it live: **https://restframe.us/openingstudy/**
-
-## ✨ Features
-
-### 🔍 Explore Openings with Lichess Data
-- Pulls moves and statistics from the **Lichess Opening Explorer API**
-- Displays move popularity, win percentages, and typical continuations
-- Helps you compare candidate moves using real-world data
-
-### 📂 Build & Save Your Repertoire
-- One-click move adding
-- Your repertoire is stored locally in your browser
-- Build separate White and Black lines
-- No server, login, or backend required
-
-### ♟ Beautiful Chessboard
-- Uses chess piece artwork by **[Maurizio Monge](https://github.com/mauriziomonge/chess-pieces)**
-- Clean, readable graphics optimized for studying openings
-
-### 🌐 100% Browser-Based
-- Fully static HTML/JS
-- Runs from any folder or host
-- Works offline once loaded
-
-## 🛠 Technology Stack
-- HTML5
-- JavaScript
-- **Lichess Opening Explorer API**
+## Technology
+- HTML5  
+- JavaScript  
+- Lichess Opening Explorer API  
 - LocalStorage
-- Artwork by **[Maurizio Monge](https://github.com/mauriziomonge/chess-pieces)**
 
-## 📥 Installation
+## Contributing
+Contributions (bug fixes, UI improvements, export/import formats, etc.) are welcome. Please keep changes lightweight and dependency-free.
 
-### Run locally
-git clone https://github.com/gpsmissouri-sudo/chess-repertoire-builder
-
-Open:
-`chess-opening-repertoire.html`
-
-### Host anywhere
-- GitHub Pages
-- Netlify
-- Any static web host
-- Local filesystem
-
-## 🤝 Contributing
-Contributions welcome!  
-Ideas:
-- UI enhancements
-- Better tree visualization
-- Additional export/import formats
-- Bug fixes
-- Performance improvements
-
-Please keep the project lightweight and dependency-free.
-
-## 📜 Credits & License
-- **Lichess Opening Explorer API** — live opening statistics
-- **Chess piece artwork** © [**Maurizio Monge**](https://github.com/mauriziomonge/chess-pieces)
-- Code licensed under the **MIT License**
+## Credits & License
+- Opening data: Lichess Opening Explorer API  
+- Chess piece artwork: https://github.com/mauriziomonge/chess-pieces  
+- Code licensed under the MIT License
