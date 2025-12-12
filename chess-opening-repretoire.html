@@ -933,6 +933,8 @@
           document.getElementById('root-btn').style.display = addedMoves.querySelectorAll('.move-row').length > 0 ? 'none' : 'block';
           document.getElementById('splash').style.display = 'none';
           document.getElementById('main').style.display = 'flex';
+          const creditEl = document.getElementById('credit');
+          if(creditEl) creditEl.style.display = 'block';
           
           // Navigate to end of first line and make it active
           const firstRow = addedMoves.querySelector('.move-row');
@@ -972,8 +974,8 @@
       });
       
       document.getElementById('splashCreate').addEventListener('click', ()=>{ document.getElementById('createChoices').style.display='flex'; document.getElementById('splashCreate').style.display='none'; });
-      document.getElementById('playWhite').addEventListener('click', ()=>{ minGamesThreshold = 10000; repertoire = { name:'New Repertoire', color:'white', tree:{} }; repertoire.tree['']={moves:[],children:{}}; renderMeta(); board.orientation('white'); board.position('start'); setStatus('White to move'); document.getElementById('scoresheet').textContent = ''; const addedMoves = document.getElementById('added-moves'); addedMoves.innerHTML = '<button id="root-btn">1: </button>'; document.getElementById('splash').style.display='none'; document.getElementById('main').style.display='flex'; loadRootMoves(); });
-      document.getElementById('playBlack').addEventListener('click', ()=>{ minGamesThreshold = 10000; repertoire = { name:'New Repertoire', color:'black', tree:{} }; repertoire.tree['']={moves:[],children:{}}; renderMeta(); board.orientation('black'); board.position('start'); setStatus('White to move'); document.getElementById('scoresheet').textContent = ''; const addedMoves = document.getElementById('added-moves'); addedMoves.innerHTML = '<button id="root-btn">1: </button>'; document.getElementById('splash').style.display='none'; document.getElementById('main').style.display='flex'; loadRootMoves(); });
+      document.getElementById('playWhite').addEventListener('click', ()=>{ minGamesThreshold = 10000; repertoire = { name:'New Repertoire', color:'white', tree:{} }; repertoire.tree['']={moves:[],children:{}}; renderMeta(); board.orientation('white'); board.position('start'); setStatus('White to move'); document.getElementById('scoresheet').textContent = ''; const addedMoves = document.getElementById('added-moves'); addedMoves.innerHTML = '<button id="root-btn">1: </button>'; document.getElementById('splash').style.display='none'; document.getElementById('main').style.display='flex'; const creditEl = document.getElementById('credit'); if(creditEl) creditEl.style.display = 'block'; loadRootMoves(); });
+      document.getElementById('playBlack').addEventListener('click', ()=>{ minGamesThreshold = 10000; repertoire = { name:'New Repertoire', color:'black', tree:{} }; repertoire.tree['']={moves:[],children:{}}; renderMeta(); board.orientation('black'); board.position('start'); setStatus('White to move'); document.getElementById('scoresheet').textContent = ''; const addedMoves = document.getElementById('added-moves'); addedMoves.innerHTML = '<button id="root-btn">1: </button>'; document.getElementById('splash').style.display='none'; document.getElementById('main').style.display='flex'; const creditEl = document.getElementById('credit'); if(creditEl) creditEl.style.display = 'block'; loadRootMoves(); });
 
       // done init
       setStatus('Ready');
@@ -1199,6 +1201,9 @@
         });
     });
   </script>
+  <div id="credit" style="display:none;text-align:center;color:var(--muted);font-size:14px;margin-top:8px;">
+    Chess pieces made by <a href="https://poisson.phc.dm.unipi.it/~monge/chess_art.php" target="_blank" rel="noopener" style="color:#6ea6ff;">Maurizio Monge</a>
+  </div>
   <div style="text-align:center;margin-top:24px;padding-bottom:24px">
     <a href="/" style="display:inline-block;padding:10px 20px;background:#3a3f44;color:#e6eef6;text-decoration:none;border-radius:6px;border:1px solid var(--border)">Home</a>
   </div>
