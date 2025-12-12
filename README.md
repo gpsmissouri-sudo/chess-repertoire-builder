@@ -27,5 +27,5 @@ Contributions and suggestions are welcome.
 
 ## Credits & License
 - Opening data: Lichess Opening Explorer API
-- Chess artwork: https://github.com/maurimo/chess-art and https://github.com/mauriziomonge/chess-pieces
+- Chess artwork: https://github.com/maurimo/chess-art
 - Code licensed under MIT
