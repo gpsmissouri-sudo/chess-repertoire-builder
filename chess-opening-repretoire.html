@@ -281,13 +281,14 @@
       function renderMeta(){ 
         const headerEl = document.getElementById('repHeaderTitle');
         const guideEl = document.getElementById('repTitle');
+        if(!headerEl || !guideEl) return;
+        const isWhiteTurn = (game && typeof game.turn === 'function') ? (game.turn() === 'w') : true;
         if(repertoire && repertoire.color === 'black'){
           headerEl.textContent = 'Black Repertoire';
-          guideEl.textContent = 'Add expected white moves.';
+          guideEl.textContent = isWhiteTurn ? 'Add expected white moves.' : 'Choose your reply.';
         } else {
           headerEl.textContent = 'White Repertoire';
-          // At start, white to move: prompt to choose white's move
-          guideEl.textContent = 'Choose your move.';
+          guideEl.textContent = isWhiteTurn ? 'Choose your move.' : 'Add expected black moves.';
         }
       }
 
@@ -446,21 +447,11 @@
         document.querySelector('.root-moves').style.display = 'none'; // Hide root moves table
         
         // Update title based on whose turn it is and if changing
-        const isWhiteTurn = moves.length % 2 === 0;
+        const isWhiteTurn = game.turn() === 'w';
         if(changingMove){
           document.getElementById('repTitle').textContent = 'Change your response?';
-        } else if(repertoire.color === 'black'){
-          if(isWhiteTurn){
-            document.getElementById('repTitle').textContent = 'Add expected white moves.';
-          } else {
-            document.getElementById('repTitle').textContent = 'Choose your reply.';
-          }
         } else {
-          if(isWhiteTurn){
-            document.getElementById('repTitle').textContent = 'Choose your move.';
-          } else {
-            document.getElementById('repTitle').textContent = 'Add expected black moves.';
-          }
+          renderMeta();
         }
         
         const tbody = document.querySelector('#respTable tbody');
@@ -500,7 +491,7 @@
           
           moveItems.forEach(m=>{
             const tr=document.createElement('tr');
-            const isWhiteTurn = moves.length % 2 === 0;
+            const isWhiteTurn = game.turn() === 'w';
             const isAdded = addedSans.includes(m.san);
             let buttonClass, buttonText;
             
@@ -777,7 +768,6 @@
                 
                 // Continue to next level
                 await showResponses(newMoves);
-                renderMeta();
               }
             }
           };
@@ -1202,7 +1192,7 @@
     });
   </script>
   <div id="credit" style="display:none;text-align:center;color:var(--muted);font-size:14px;margin-top:8px;">
-    Chess pieces made by <a href="https://poisson.phc.dm.unipi.it/~monge/chess_art.php" target="_blank" rel="noopener" style="color:#6ea6ff;">Maurizio Monge</a>
+    Chess pieces by <a href="https://poisson.phc.dm.unipi.it/~monge/chess_art.php" target="_blank" rel="noopener" style="color:#6ea6ff;">Maurizio Monge</a>
   </div>
   <div style="text-align:center;margin-top:24px;padding-bottom:24px">
     <a href="/" style="display:inline-block;padding:10px 20px;background:#3a3f44;color:#e6eef6;text-decoration:none;border-radius:6px;border:1px solid var(--border)">Home</a>
