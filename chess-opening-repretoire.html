@@ -1105,7 +1105,9 @@
           } else {
             // Opponent move - don't show options or best moves, hide responses
             document.getElementById('responses').style.display = 'none';
-            document.querySelector('.root-moves').style.display = 'block';
+            // Hide root moves too to fully remove the best-move panel behavior when reviewing past opponent moves
+            const rootMoves = document.querySelector('.root-moves');
+            if(rootMoves){ rootMoves.style.display = 'none'; }
           }
         } else if(e.target.classList.contains('response-btn')){
           // Clicking on empty response button - show options to respond
