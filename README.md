@@ -1,15 +1,21 @@
 # Chess Repertoire Builder
-A lightweight browser-based tool for exploring chess openings and building custom repertoires using data from the **Lichess Opening Explorer API**. Chess piece artwork: https://github.com/mauriziomonge/chess-pieces
+A lightweight browser-based tool for exploring chess openings and building custom repertoires using data from the **Lichess Opening Explorer API**.  
+Chess piece artwork: https://github.com/mauriziomonge/chess-pieces
+
+## Try It Online
+You can use the program here:  
+https://restframe.us/openingstudy/
 
 ## Overview
-Chess Repertoire Builder is a self-contained HTML/JavaScript application that lets you explore opening lines, view statistics, and assemble a personalized repertoire directly in the browser. It retrieves move data from the Lichess Opening Explorer API, providing statistics from millions of games across rating levels and time controls.
+Chess Repertoire Builder is a self-contained HTML/JavaScript application that lets you explore opening lines, view statistics, and build a personalized opening repertoire directly in your browser. It retrieves move data from the Lichess Opening Explorer API, providing statistics from millions of real games across rating levels and time controls.
 
 ## Features
-- Pulls moves and statistics from the Lichess Opening Explorer API  
-- Shows move popularity and win/draw/loss rates  
-- Add moves to a personal opening tree and edit lines interactively  
-- Save and load repertoires using LocalStorage (no account or backend required)  
-- Works for both White and Black lines
+- Uses the Lichess Opening Explorer API for move statistics  
+- Displays move popularity and win/draw/loss percentages  
+- Allows adding moves to a personal opening tree  
+- Saves and loads repertoires using LocalStorage  
+- Works for both White and Black repertoires  
+- 100% browser-based, no backend required
 
 ## Technology
 - HTML5  
@@ -18,7 +24,7 @@ Chess Repertoire Builder is a self-contained HTML/JavaScript application that le
 - LocalStorage
 
 ## Contributing
-Contributions (bug fixes, UI improvements, export/import formats, etc.) are welcome. Please keep changes lightweight and dependency-free.
+Contributions and suggestions are welcome. 
 
 ## Credits & License
 - Opening data: Lichess Opening Explorer API  
