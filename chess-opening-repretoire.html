@@ -90,6 +90,9 @@
       <div style="flex:1;min-width:300px" class="paper-panel">
         <h2 id="repHeaderTitle" style="margin:0 0 6px 0">No Repertoire</h2>
         <div id="repTitle" style="margin:0 0 12px 0;color:#3a3020">No repertoire</div>
+        <div class="top-actions" style="display:flex;justify-content:flex-end;align-items:center;margin:4px 0 8px 0">
+          <button id="acceptBtn" title="Accept opponent moves and choose your reply" style="display:none">Accept</button>
+        </div>
         <div class="root-moves" style="margin-top:12px">
           <table>
             <thead>
@@ -156,6 +159,7 @@
         flip: () => { const orient = document.querySelector('.board').dataset.orient; board.orientation(orient === 'white' ? 'black' : 'white'); }
       };
       const game = new Chess();
+      let currentResponsesPath = [];
       
       // Highlight functions for showing from/to squares
       function clearHighlights(){
@@ -437,6 +441,7 @@
 
       async function showResponses(moves, options = {}){
         const { changingMove, originalLinePath } = options;
+        currentResponsesPath = Array.isArray(moves) ? moves.slice() : [];
         
         game.reset();
         try{ moves.forEach(m=>game.move(m)); }catch(e){ console.warn('apply moves error', e); }
@@ -452,6 +457,16 @@
         } else {
           renderMeta();
         }
+
+        // Show/hide Accept button when it's opponent's turn (i.e., we're adding/removing opponent moves)
+        const isOpponentTurn = (repertoire.color === 'black' && isWhiteTurn) || (repertoire.color === 'white' && !isWhiteTurn);
+        const acceptBtn = document.getElementById('acceptBtn');
+        if(acceptBtn){ acceptBtn.style.display = 'none'; }
+        const refreshAccept = () => {
+          if(!acceptBtn) return;
+          const hasSelected = !!document.querySelector('#respTable tbody button.removeMove');
+          acceptBtn.style.display = (isOpponentTurn && hasSelected) ? 'inline-flex' : 'none';
+        };
         
         const tbody = document.querySelector('#respTable tbody');
         tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
@@ -524,6 +539,8 @@
           if(moveItems.length === 0){
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#5a5040">No moves found</td></tr>';
           }
+          // After rendering rows, update Accept visibility based on selection state
+          refreshAccept();
           
           // Handle view/apply move clicks with debounce to prevent double-clicks
           let lastClickTime = 0;
@@ -641,6 +658,7 @@
                 document.getElementById('root-btn').style.display = 'none';
                 btn.textContent = 'Remove';
                 btn.className = 'removeMove';
+                refreshAccept();
               } else if(btn.className === 'removeMove'){
                 const san = btn.getAttribute('data-san');
                 const addedMoves = document.getElementById('added-moves');
@@ -672,6 +690,7 @@
                 }
                 btn.textContent = 'Add';
                 btn.className = 'addMove';
+                refreshAccept();
               }
             } else {
               if (btn.className === 'viewMove') {
@@ -773,6 +792,39 @@
         } catch(err) {
           tbody.innerHTML = '<tr><td colspan="5" class="error">Could not load responses: '+err.message+'</td></tr>';
         }
+      }
+
+      // Accept button handler: proceed to next step picking our reply
+      const acceptBtnEl = document.getElementById('acceptBtn');
+      if(acceptBtnEl){
+        acceptBtnEl.addEventListener('click', ()=>{
+          const tbody = document.querySelector('#respTable tbody');
+          if(!tbody){ return; }
+          // Find first selected opponent move (those toggled to Remove)
+          const chosen = tbody.querySelector('button.removeMove');
+          if(!chosen){ setStatus && setStatus('Add at least one opponent move'); return; }
+          const san = chosen.getAttribute('data-san');
+          const nextMoves = currentResponsesPath.concat([san]);
+          // Mark the corresponding line in the repertoire sheet (bottom) as active and highlight last move
+          const addedMoves = document.getElementById('added-moves');
+          const targetPath = nextMoves.join(' ');
+          // Clear previous highlights
+          document.querySelectorAll('.response-btn.active').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.move-btn.current').forEach(b => b.classList.remove('current'));
+          document.querySelectorAll('.move-btn.selected').forEach(b => b.classList.remove('selected'));
+          document.querySelectorAll('.move-btn.gray').forEach(b => b.classList.remove('gray'));
+          // Activate the target row
+          const row = addedMoves ? addedMoves.querySelector(`.move-row[data-path="${targetPath}"]`) : null;
+          if(row){
+            const lastMoveBtn = row.querySelector('.move-btn:last-of-type');
+            if(lastMoveBtn){ lastMoveBtn.classList.add('selected'); }
+            const respBtn = row.querySelector('.response-btn');
+            if(respBtn){ respBtn.classList.add('active'); }
+            try{ row.scrollIntoView({ block:'nearest', behavior:'smooth' }); }catch{}
+          }
+          // Proceed to your reply options at this position
+          showResponses(nextMoves);
+        });
       }
 
       // Wire splash/create controls
