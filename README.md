@@ -1,32 +1,31 @@
 # Chess Repertoire Builder
-A lightweight browser-based tool for exploring chess openings and building custom repertoires using data from the **Lichess Opening Explorer API**.  
-Chess piece artwork: https://github.com/mauriziomonge/chess-pieces
+A lightweight, browser-based tool for exploring chess openings and building custom repertoires using data from the **Lichess Opening Explorer API**.
 
 ## Try It Online
-You can use the program here:  
-https://restframe.us/openingstudy/
+Use the app here: https://restframe.us/openingstudy/
 
 ## Overview
 Chess Repertoire Builder is a self-contained HTML/JavaScript application that lets you explore opening lines, view statistics, and build a personalized opening repertoire directly in your browser. It retrieves move data from the Lichess Opening Explorer API, providing statistics from millions of real games across rating levels and time controls.
 
 ## Features
-- Uses the Lichess Opening Explorer API for move statistics  
-- Displays move popularity and win/draw/loss percentages  
-- Allows adding moves to a personal opening tree  
-- Saves and loads repertoires using LocalStorage  
-- Works for both White and Black repertoires  
-- 100% browser-based, no backend required
+- Opening stats via Lichess API
+- Move popularity and win/draw/loss percentages
+- Build and edit a personal opening tree (White/Black)
+- Save/load repertoires via LocalStorage
+- 100% browser-based, no backend
+- Optional: use Maurizio’s chess-art to configure stroke/shadow/colours
 
 ## Technology
-- HTML5  
-- JavaScript  
-- Lichess Opening Explorer API  
+- HTML5
+- JavaScript
+- Lichess Opening Explorer API
 - LocalStorage
 
+
 ## Contributing
-Contributions and suggestions are welcome. 
+Contributions and suggestions are welcome.
 
 ## Credits & License
-- Opening data: Lichess Opening Explorer API  
-- Chess piece artwork: https://github.com/mauriziomonge/chess-pieces  
-- Code licensed under the MIT License
+- Opening data: Lichess Opening Explorer API
+- Chess artwork: https://github.com/maurimo/chess-art and https://github.com/mauriziomonge/chess-pieces
+- Code licensed under MIT
