@@ -201,7 +201,7 @@
         squares.forEach(sq => {
           const key = sq.dataset.rank + sq.dataset.file;
           const piece = boardObj[key];
-          sq.innerHTML = piece ? `<img class="piece" src="/pieces/${piece.color}${piece.type.toUpperCase()}.svg" alt="">` : '';
+          sq.innerHTML = piece ? `<img class="piece" src="pieces/${piece.color}${piece.type.toUpperCase()}.svg" alt="">` : '';
         });
       };
 
